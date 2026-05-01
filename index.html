@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weights And Biases</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -157,7 +158,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .ex-list{display:flex;flex-direction:column;gap:6px}
 .ex-card{background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--radius);overflow:hidden;transition:border-color .15s}
 .ex-card.ex-sel{border-color:var(--or)}
-.ex-top{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s;user-select:none}
+.ex-top{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s;user-select:none;width:100%;border:none;background:transparent;font:inherit;text-align:left;}
 .ex-top:hover{background:rgba(255,255,255,0.015)}.ex-top:active{background:rgba(249,115,22,0.04)}
 .chk{width:20px;height:20px;border-radius:5px;border:0.5px solid var(--bdr2);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,border-color .15s}
 .chk.on{background:var(--or);border-color:var(--or)}
@@ -322,17 +323,18 @@ body.light .ss-hdr{background:linear-gradient(135deg,#f0f0f0 0%,#e8e8e8 100%)}
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="hero-eyebrow">// 4-DAY PROGRAMME · INTERMEDIATE</div>
-        <div class="hero-wordmark"><em>Weights</em><span class="hero-and">— and —</span>Biases</div>
+        <div class="hero-eyebrow">HTTPS://WWW.PROJORO.CA/ PROJECT ORO : VIBE CODE WORKOUT  PROGRAMME · CLAUDE CODE ASSISTED · MUSCLEWIKI FORM VIDEOS</div>
+       
       </div>
       <div class="theme-toggle">
         <button class="theme-btn" id="btn-dark"  onclick="setTheme('dark')"  title="Dark mode">☾</button>
         <button class="theme-btn" id="btn-light" onclick="setTheme('light')" title="Light mode">☀</button>
       </div>
     </div>
-    <div class="hero-sub">Strength · Shaping · Mass · Free weights focus</div>
+    <div class="hero-sub">Strength · Shaping · Mass · Free weights focus · VIBE CODED WORKOUT</div>
   </div>
   <div id="timer-container">
+    <div class="hero-wordmark"><em>Weights & BIASES</em></div>
     <div class="rt-label">// Rest Timer</div>
     <div class="rt-inner">
       <div class="rt-presets">
@@ -354,13 +356,41 @@ body.light .ss-hdr{background:linear-gradient(135deg,#f0f0f0 0%,#e8e8e8 100%)}
 'use strict';
 
 // ═══════════════════════════════════════════════════
+//  STORAGE SHIM
+//  Wraps localStorage in the same async interface as
+//  the Claude artifact window.storage API so all
+//  save/load calls work identically when deployed.
+// ═══════════════════════════════════════════════════
+window.storage = {
+  set: async (key, value) => {
+    try { localStorage.setItem('wab:'+key, String(value)); } catch(e) {}
+    return { key, value };
+  },
+  get: async (key) => {
+    const value = localStorage.getItem('wab:'+key);
+    if (value === null) throw new Error('Key not found: '+key);
+    return { key, value };
+  },
+  delete: async (key) => {
+    localStorage.removeItem('wab:'+key);
+    return { key, deleted: true };
+  },
+  list: async (prefix) => {
+    const p = prefix ? 'wab:'+prefix : 'wab:';
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith(p))
+      .map(k => k.slice(4)); // strip 'wab:' prefix
+    return { keys };
+  }
+};
+
+// ═══════════════════════════════════════════════════
 //  VIDEO PLACEHOLDERS
-//  Replace VIDEO_PLACEHOLDER_*.mp4 with your .mp4 URLs
 // ═══════════════════════════════════════════════════
 const VIDEO_URLS = {
-  'Barbell Bench Press':        'VIDEO_PLACEHOLDER_barbell-bench-press.mp4',
-  'Standing Overhead Press':    'VIDEO_PLACEHOLDER_standing-overhead-press.mp4',
-  'Incline Dumbbell Press':     'VIDEO_PLACEHOLDER_incline-dumbbell-press.mp4',
+  'Barbell Bench Press':        'https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bench-press-side_KciuhbB.mp4',
+  'Standing Overhead Press':    'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-overhead-press-side.mp4',
+  'Incline Dumbbell Press':     'https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-neutral-high-incline-bench-press-side.mp4',
   'Close-Grip Bench Press':     'VIDEO_PLACEHOLDER_close-grip-bench-press.mp4',
   'Weighted Dips':              'VIDEO_PLACEHOLDER_weighted-dips.mp4',
   'Dumbbell Shoulder Press':    'VIDEO_PLACEHOLDER_dumbbell-shoulder-press.mp4',
@@ -384,16 +414,16 @@ const VIDEO_URLS = {
   'Overhead Tricep Extension':  'VIDEO_PLACEHOLDER_overhead-tricep-extension.mp4',
   'Weighted Plank':             'VIDEO_PLACEHOLDER_weighted-plank.mp4',
   'Dumbbell Russian Twist':     'VIDEO_PLACEHOLDER_dumbbell-russian-twist.mp4',
-  'Barbell Back Squat':         'VIDEO_PLACEHOLDER_barbell-back-squat.mp4',
-  'Romanian Deadlift':          'VIDEO_PLACEHOLDER_romanian-deadlift.mp4',
-  'Barbell Hip Thrust':         'VIDEO_PLACEHOLDER_barbell-hip-thrust.mp4',
-  'Bulgarian Split Squat':      'VIDEO_PLACEHOLDER_bulgarian-split-squat.mp4',
-  'Walking Dumbbell Lunges':    'VIDEO_PLACEHOLDER_walking-dumbbell-lunges.mp4',
-  'Front Squat':                'VIDEO_PLACEHOLDER_front-squat.mp4',
-  'Stiff-Leg Dumbbell Deadlift':'VIDEO_PLACEHOLDER_stiff-leg-dumbbell-deadlift.mp4',
-  'Goblet Squat':               'VIDEO_PLACEHOLDER_goblet-squat.mp4',
-  'Standing Barbell Calf Raise':'VIDEO_PLACEHOLDER_standing-barbell-calf-raise.mp4',
-  'Seated Dumbbell Calf Raise': 'VIDEO_PLACEHOLDER_seated-dumbbell-calf-raise.mp4',
+  'Barbell Back Squat':         'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-side.mp4',
+  'Romanian Deadlift':          'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-side_dnNh5UH.mp4',
+  'Barbell Hip Thrust':         'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-side.mp4',
+  'Bulgarian Split Squat':      'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-bulgarian-split-squat-side.mp4',
+  'Walking Dumbbell Lunges':    'https://media.musclewiki.com/media/uploads/videos/branded/male-Recovery-lunge-walking-side.mp4',
+  'Front Squat':                'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-banded-front-squat-side.mp4',
+  'Stiff-Leg Dumbbell Deadlift':'https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-stiff-leg-deadlift-front.mp4',
+  'Goblet Squat':               'https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-goblet-squat-side.mp4',
+  'Standing Barbell Calf Raise':'https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-calf-raises-side.mp4',
+  'Seated Dumbbell Calf Raise': 'https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-seated-calf-raise-side.mp4',
 };
 const isPlaceholder = url => !url || url.startsWith('VIDEO_PLACEHOLDER_');
 
@@ -408,7 +438,7 @@ const DAYS = [
       {n:'Standing Overhead Press', m:'Shoulders, upper chest, triceps', s:'4 × 6-8',   r:5},
       {n:'Incline Dumbbell Press',  m:'Upper chest, anterior delt',      s:'3 × 10-12', r:4},
       {n:'Close-Grip Bench Press',  m:'Triceps, inner chest',            s:'3 × 8-10',  r:4},
-      {n:'Weighted Dips',           m:'Chest, triceps, shoulders',       s:'3 × 10-12', r:4, defaultBW:true},
+      {n:'Weighted Dips',           m:'Chest, triceps, shoulders',       s:'3 × 10-12', r:4},
       {n:'Dumbbell Shoulder Press', m:'Shoulders, triceps',              s:'3 × 10-12', r:4},
       {n:'Dumbbell Lateral Raise',  m:'Medial deltoid, shoulder width',  s:'4 × 12-15', r:4},
       {n:'EZ Bar Skull Crushers',   m:'Triceps long & lateral head',     s:'3 × 10-12', r:4},
@@ -506,9 +536,12 @@ function setTheme(t) {
 function startSessionClock(dayId) {
   if (!sessionStartTimes[dayId]) sessionStartTimes[dayId] = Date.now();
   if (!clockInterval) {
+    // Capture dayId in closure — do NOT reference activeDay here, which could
+    // change if the user switches tabs mid-session (Fix #4)
+    const id = dayId;
     clockInterval = setInterval(() => {
       const el = document.getElementById('sess-clock');
-      if (el) el.textContent = fmtDuration(Date.now() - (sessionStartTimes[activeDay] || Date.now()));
+      if (el) el.textContent = fmtDuration(Date.now() - (sessionStartTimes[id] || Date.now()));
     }, 1000);
   }
 }
@@ -525,13 +558,16 @@ function fmtDuration(ms) {
 let saveTimer = null;
 function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(persistAll, 900); }
 async function persistAll() {
-  try {
-    await window.storage.set('wab_unit', unit);
-    await window.storage.set('wab_theme', theme);
-    await window.storage.set('wab_notes', JSON.stringify(sessionNotes));
-    for (const d of DAYS) await window.storage.set(`wab_day_${d.id}`, JSON.stringify({ selected:[...selected[d.id]], logs:logs[d.id] }));
-    showToast('Saved ✓');
-  } catch(e) {}
+  // Each write independently guarded — one failure never silently drops subsequent writes
+  try { await window.storage.set('wab_unit',  unit); } catch(e){}
+  try { await window.storage.set('wab_theme', theme); } catch(e){}
+  try { await window.storage.set('wab_notes', JSON.stringify(sessionNotes)); } catch(e){}
+  // Persist session start times so clock survives page refresh (Fix #3)
+  try { await window.storage.set('wab_start_times', JSON.stringify(sessionStartTimes)); } catch(e){}
+  for (const d of DAYS) {
+    try { await window.storage.set(`wab_day_${d.id}`, JSON.stringify({ selected:[...selected[d.id]], logs:logs[d.id] })); } catch(e){}
+  }
+  showToast('Saved ✓');
 }
 async function loadAll() {
   try { const r=await window.storage.get('wab_unit');  if(r?.value) unit=r.value; } catch(e){}
@@ -541,6 +577,16 @@ async function loadAll() {
     try { const r=await window.storage.get(`wab_day_${d.id}`); if(r?.value){const data=JSON.parse(r.value); selected[d.id]=new Set(Array.isArray(data.selected)?data.selected:[]); logs[d.id]=(data.logs&&typeof data.logs==='object')?data.logs:{};} } catch(e){}
   }
   try { const r=await window.storage.get('wab_history'); if(r?.value) sessionHistory=JSON.parse(r.value); } catch(e){}
+  // Restore session start times — allows clock to survive a page refresh mid-session (Fix #3)
+  try {
+    const r=await window.storage.get('wab_start_times');
+    if(r?.value){
+      const stored=JSON.parse(r.value);
+      for(const id of Object.keys(sessionStartTimes)){
+        if(stored[id]) sessionStartTimes[id]=stored[id];
+      }
+    }
+  } catch(e){}
 }
 async function saveSessionToHistory(day, sel, duration) {
   const now=new Date(); let totalVol=0;
@@ -552,12 +598,25 @@ async function saveSessionToHistory(day, sel, duration) {
   const session = { id:now.getTime(), date:now.toISOString(), dayId:day.id, dayName:day.name, unit, totalVolume:totalVol, duration, notes:sessionNotes[day.id], exercises:exData };
   sessionHistory.unshift(session);
   if (sessionHistory.length>200) sessionHistory=sessionHistory.slice(0,200);
+  invalidatePBCache(); // history changed — next render recomputes PB map (Fix #5)
   try { await window.storage.set('wab_history', JSON.stringify(sessionHistory)); } catch(e){}
 }
 
 // ═══════════════════════════════════════════════════
 //  PB
 // ═══════════════════════════════════════════════════
+// Memoised PB map — recomputed only when history changes (Fix #5)
+let _pbCache = { map: null, len: -1, newestId: -1 };
+function getCachedPBMap() {
+  const len = sessionHistory.length;
+  const newestId = len > 0 ? sessionHistory[0].id : -1;
+  if (_pbCache.map && _pbCache.len === len && _pbCache.newestId === newestId) return _pbCache.map;
+  _pbCache.map = buildPBMap(sessionHistory);
+  _pbCache.len = len;
+  _pbCache.newestId = newestId;
+  return _pbCache.map;
+}
+function invalidatePBCache() { _pbCache.map = null; }
 function buildPBMap(history) {
   const map={}, chrono=[...history].reverse();
   for (const sess of chrono) for (const ex of sess.exercises) {
@@ -830,6 +889,16 @@ function renderTimer(){
 // ═══════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════
+// Sanitise user-generated strings before innerHTML injection (Fix #6)
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
 function parseSetCount(s){const m=s.match(/^(\d+)/);return m?parseInt(m[1]):3;}
 function star(n){return Array.from({length:5},(_,i)=>`<span style="color:${i<n?'var(--or)':'var(--txt3)'}">${i<n?'★':'☆'}</span>`).join('');}
 function cvtW(w,from,to){if(w===''||w==null)return w;const n=parseFloat(w);if(isNaN(n)||from===to)return w;return(Math.round((from==='kg'?n*2.2046:n/2.2046)*2)/2).toString();}
@@ -866,7 +935,7 @@ function render(){
   const clockVal=hasStart?fmtDuration(Date.now()-sessionStartTimes[activeDay]):'—';
   mc.innerHTML=`
     ${renderTabs()}
-    <div class="day-hdr"><div class="dh-title">${day.name}</div><div class="dh-sub">${day.focus} &nbsp;·&nbsp; Select exercises · Log each set</div></div>
+    <div class="day-hdr"><div class="dh-title">${day.name}</div><div class="dh-sub">${day.focus} &nbsp;·&nbsp;// SELECT EXERCISES // LOG EACH SET // MARK AS COMPLETED // SHARE SHEET SESSION </div></div>
     <div class="note-box">${day.note}</div>
     <div class="counter-bar">
       <span class="counter-label">exercises selected</span>
@@ -888,14 +957,14 @@ function render(){
 function renderExCard(dayId,ex,idx,sel){
   const checked=sel.has(idx),setCount=parseSetCount(ex.s),exLogs=logs[dayId][idx]||[];
   return`<div class="ex-card${checked?' ex-sel':''}">
-    <div class="ex-top" onclick="toggleEx('${dayId}',${idx})">
+    <button type="button" class="ex-top" onclick="toggleEx('${dayId}',${idx})" aria-pressed="${checked}" aria-label="${ex.n}">
       <div class="chk${checked?' on':''}"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="${checked?'#fff':'transparent'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
       <div class="ex-info">
         <div class="ex-name">${ex.n}${ex.defaultBW?'<span style="font-family:var(--mono);font-size:9px;color:var(--blue);margin-left:6px;opacity:.8">BW</span>':''}</div>
         <div class="ex-meta">${ex.m}</div>
       </div>
       <div class="ex-badge"><div class="ex-stars">${star(ex.r)}</div><div class="ex-sets">${ex.s}</div></div>
-    </div>
+    </button>
     ${checked?renderFormGuideArea(dayId,idx,ex.n):''}
     ${checked?renderSets(dayId,idx,setCount,exLogs):''}
     ${checked?`<div id="vol-${dayId}-${idx}">${calcVolumeHTML(dayId,idx)}</div>`:''}
@@ -911,7 +980,7 @@ function renderFormGuideArea(dayId,idx,exName){
     }</div><div class="inline-video-footer"><span class="ivf-label">${exName}</span><span class="ivf-mute-hint">Looping silently</span></div></div>`:'' ;
   return`<div id="fg-area-${dayId}-${idx}">
     <div class="form-guide-bar">
-      <button class="form-guide-btn${isOpen?' fg-open':''}" onclick="toggleVideo('${dayId}',${idx})"><span class="fg-icon">▶</span> Form Guide</button>
+      <button class="form-guide-btn${isOpen?' fg-open':''}" onclick="toggleVideo('${dayId}',${idx})"><span class="fg-icon">▶</span> MUSCLEWIKI FORM GUIDE</button>
       ${isOpen?`<button class="fg-fullscreen-btn" onclick="openVideoModal('${dayId}',${idx},'${exName.replace(/'/g,"\\'")}')">⛶ Fullscreen</button>`:''}
     </div>${player}
   </div>`;
@@ -927,7 +996,7 @@ function renderSets(dayId,exIdx,setCount,exLogs){
       <span class="set-num">${i+1}</span>${wtCell}
       <span class="set-x">×</span>
       <input class="set-in" type="number" inputmode="numeric" placeholder="0" step="1" min="0" max="999" value="${log.r||''}" oninput="updateLog('${dayId}',${exIdx},${i},'r',this.value)">
-      <span class="set-unit-lbl">${isBW?'+kg':'wt'}<br>reps</span>
+      <span class="set-unit-lbl">${isBW?`+${unit}`:'wt'}<br>reps</span>
       <button class="done-btn${log.done?' on':''}" onclick="toggleDone('${dayId}',${exIdx},${i})">${log.done?'✓':'○'}</button>
     </div>`;
   }).join('');
@@ -953,7 +1022,7 @@ function renderSessionSummary(day,sel){
 // ═══════════════════════════════════════════════════
 function renderHistoryView(){
   if(!sessionHistory.length) return`<div class="hist-hdr"><span class="hist-hdr-title">Session History</span><span class="hist-hdr-count">0 sessions</span></div><div class="hist-empty"><div class="hist-empty-icon">◎</div>No sessions recorded yet.<br>Complete your first workout to see<br>your history and PB tracking here.</div>`;
-  const pbMap=buildPBMap(sessionHistory);
+  const pbMap=getCachedPBMap(); // memoised — only recomputes when history changes (Fix #5)
   let totalAT=0,totalLS=0;
   for(const sess of sessionHistory) for(const ex of sess.exercises){const f=getPBFlags(pbMap,ex.name,sess.id);if(f.atW||f.atR)totalAT++;if(f.lsW||f.lsR)totalLS++;}
   const totalVol=sessionHistory.reduce((a,s)=>a+(s.totalVolume||0),0);
@@ -984,7 +1053,7 @@ function renderSessionCard(sess,pbMap){
       <div class="sess-stat"><div class="sess-stat-v" style="font-size:${volStr.length>5?'13':'20'}px;padding-top:${volStr.length>5?'4':'0'}px">${volStr}</div><div class="sess-stat-l">Volume</div></div>
     </div>
     ${sess.exercises.map(ex=>renderHistoryExercise(sess,ex,pbMap)).join('')}
-    ${sess.notes?`<div class="sess-notes-box"><div class="sess-notes-lbl">// Session notes</div><div class="sess-notes-body">${sess.notes}</div></div>`:''}
+    ${sess.notes?`<div class="sess-notes-box"><div class="sess-notes-lbl">// Session notes</div><div class="sess-notes-body">${escapeHTML(sess.notes)}</div></div>`:''}
     <div class="sess-share-bar">
       <button class="sess-share-btn" onclick="downloadCardFromHistory(${sess.id})">⬇ Download Session Card</button>
     </div>
@@ -1022,7 +1091,7 @@ function renderHistoryExercise(sess,ex,pbMap){
 function downloadCardFromHistory(sessId){
   const sess=sessionHistory.find(s=>s.id===sessId);
   if(!sess) return;
-  const pbMap=buildPBMap(sessionHistory);
+  const pbMap=getCachedPBMap(); // use cache — no need to recompute for card download (Fix #5)
   downloadCard(sess, pbMap);
 }
 
@@ -1037,7 +1106,11 @@ async function completeSession(){
   sessionStartTimes[activeDay]=null;
   clearInterval(clockInterval); clockInterval=null;
   await saveSessionToHistory(day,sel,duration);
-  const pbMap=buildPBMap(sessionHistory);
+  // Fix #7: clear notes for this day now that they are saved into history,
+  // so the next session on this day starts with a clean notes field
+  sessionNotes[day.id]='';
+  try { await window.storage.set('wab_notes', JSON.stringify(sessionNotes)); } catch(e){}
+  const pbMap=getCachedPBMap(); // cache already invalidated by saveSessionToHistory (Fix #5)
   showCompletionModal(day,sel,pbMap,sessionHistory[0]);
   showToast('Session saved ✓');
 }
@@ -1055,10 +1128,10 @@ function showCompletionModal(day,sel,pbMap,latestSess){
     const setsHTML=exLog.map((s,i)=>{if(!s.w&&!s.r&&!s.isBW)return'';const w=s.isBW?(parseFloat(s.extra)||0):(parseFloat(s.w)||0),r=parseInt(s.r)||0,isAT=(w>0&&w>=atW2)||(r>0&&r>=atR2);const wStr=s.isBW?`BW${s.extra&&parseFloat(s.extra)>0?` +${s.extra} ${unit}`:''}`:( s.w?s.w+' '+unit:'—');return`<div class="modal-set-row${isAT?' is-atpb':''}"><span class="modal-set-n">Set ${i+1}</span><span class="modal-set-data">${wStr} × ${s.r||'—'} reps ${s.done?'<span style="color:var(--green)">✓</span>':''} ${isAT?'<span style="color:var(--gold)">★</span>':''}</span></div>`;}).filter(Boolean).join('');
     return`<div class="modal-ex"><div class="modal-ex-hdr"><span class="modal-ex-name">${ex.n}</span><div class="modal-ex-badges">${badges}</div></div>${setsHTML||'<div class="modal-no-data">No sets logged</div>'}</div>`;
   }).join('');
-  const notesHTML=sessionNotes[day.id]?`<div class="modal-notes-box"><div class="modal-notes-label">// Session notes</div><div class="modal-notes-text">${sessionNotes[day.id]}</div></div>`:'';
+  const notesHTML=sessionNotes[day.id]?`<div class="modal-notes-box"><div class="modal-notes-label">// Session notes</div><div class="modal-notes-text">${escapeHTML(sessionNotes[day.id])}</div></div>`:'';
   const modal=document.getElementById('_modal');
   modal.innerHTML=`<div class="modal-card">
-    <div class="modal-header"><div class="modal-check">✓</div><div class="modal-title">Session Complete</div><div class="modal-date">${dateStr} · ${timeStr}</div><div class="modal-badge">${day.name}</div></div>
+    <div class="modal-header"><div class="modal-check">✓</div><div class="modal-title">//WEIGHTS & BIASES ⚖ Complete//</div><div class="modal-date">${dateStr} · ${timeStr}</div><div class="modal-badge">${day.name}</div></div>
     <div class="modal-body">
       <div class="modal-stat-box">
         <div class="modal-stat-row"><span>Exercises</span><span>${sel.size}</span></div>
@@ -1070,7 +1143,7 @@ function showCompletionModal(day,sel,pbMap,latestSess){
       ${notesHTML}${exHTML}
     </div>
     <div class="modal-actions">
-      <button class="modal-share-btn" onclick="downloadCard(sessionHistory[0],buildPBMap(sessionHistory))">⬇ Share Card</button>
+      <button class="modal-share-btn" onclick="downloadCard(sessionHistory[0],getCachedPBMap())">⬇ Share Card</button>
       <button class="modal-close-btn" onclick="closeModal()">Close</button>
     </div>
   </div>`;
